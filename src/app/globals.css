@@ -108,7 +108,7 @@ input:disabled { background: var(--lino); color: var(--tinta-2); }
 .rejilla { border-collapse: collapse; width: 100%; min-width: 330px; table-layout: fixed; }
 .rejilla th:last-child, .rejilla td:last-child { width: 46px; }
 .rejilla th, .rejilla td { border-bottom: 1px solid var(--linea); padding: 6px; text-align: left; font-size: 13.5px; }
-.rejilla th { background: var(--lino); font-weight: 700; }
+.rejilla th { background: var(--lino); font-weight: 700; font-size: 12px; overflow-wrap: anywhere; }
 .rejilla input { padding: 6px 5px; font: 500 15px var(--mono); border-width: 1.2px; min-width: 0; width: 100%; }
 .rejilla input.cambiado { background: var(--cinta-claro); }
 
@@ -121,7 +121,7 @@ input:disabled { background: var(--lino); color: var(--tinta-2); }
 .res thead .gana { box-shadow: inset 2px 0 0 var(--tinta), inset -2px 0 0 var(--tinta), inset 0 2px 0 var(--tinta); }
 .res tfoot .gana { box-shadow: inset 2px 0 0 var(--tinta), inset -2px 0 0 var(--tinta), inset 0 -2px 0 var(--tinta); }
 .parecido { color: var(--ok); }
-.lejos { color: var(--gis); }
+.lejos { color: var(--tinta); }
 .res-cap { text-align: left; caption-side: top; padding: 10px 0 4px; font: 400 13.5px var(--sans); color: var(--tinta-2); white-space: normal; }
 @media (max-width: 560px) {
   .res { font-size: 12.5px; }
@@ -161,3 +161,4 @@ input:disabled { background: var(--lino); color: var(--tinta-2); }
 .fuentes { font-size: 13.5px; }
 .fuentes li { margin-bottom: 4px; word-break: break-word; }
 pre.json { background: var(--tinta); color: var(--hoja); padding: 12px; border-radius: 6px; overflow-x: auto; font: 13px var(--mono); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -51,7 +51,7 @@ export function PasoComparar({ refe, cuerpo, tabla, resultado: r, permiso, onPau
         {tabla.producto} · {tabla.tienda}
       </p>
       <div className="chips">
-        <span className="chip gis">Tabla de la tienda · parte interesada</span>
+        <span className="chip gis">Tabla hecha por la tienda: puede fallar</span>
         <span className="chip">{tabla.tipo === "prenda" ? "Medidas de la prenda" : tabla.tipo === "cuerpo" ? "Medidas del cuerpo" : "No dice de qué son"}</span>
         <span className="chip ok">Revisada por ti ✓</span>
         {tabla.origen === "ejemplo" && <span className="chip gis">EJEMPLO INVENTADO</span>}
@@ -101,7 +101,7 @@ export function PasoComparar({ refe, cuerpo, tabla, resultado: r, permiso, onPau
               </tbody>
               <tfoot>
                 <tr>
-                  <th scope="row">Diferencia total</th>
+                  <th scope="row">Suma de diferencias<small>menos = más parecida</small></th>
                   {r.tallas.map((t) => (
                     <td key={t.talla} className={t.talla === r.masParecida ? "gana" : undefined}>{t.distancia == null ? "—" : `${t.distancia} cm`}</td>
                   ))}
@@ -145,13 +145,13 @@ export function PasoComparar({ refe, cuerpo, tabla, resultado: r, permiso, onPau
 
       <div className="explica" aria-live="polite">
         <span className="quien">
-          {cargando ? "Escribiendo…" : exp?.fuente === "gemini" ? "En sencillo · escrito por Gemini a partir de los números de arriba" : `En sencillo · plantilla sin IA${exp?.motivo ? ` (${exp.motivo})` : ""}`}
+          {cargando ? "Escribiendo…" : exp?.fuente === "gemini" ? "En sencillo · escrito con IA a partir de los números de arriba" : "En sencillo · texto automático"}
         </span>
         <p>{exp?.texto ?? "…"}</p>
       </div>
 
       <div className="acciones par">
-        <button type="button" className="btn prim" onClick={onPausa}>Seguir a la pausa antes de comprar</button>
+        <button type="button" className="btn prim" onClick={onPausa}>Seguir: antes de pagar</button>
         <button type="button" className="btn" onClick={onNoCompro}>No compro</button>
       </div>
       <p className="chico" style={{ marginTop: 8 }}>

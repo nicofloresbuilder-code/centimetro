@@ -58,18 +58,17 @@ export function PasoEtiqueta({ tabla, decisiones, setDecisiones, ultima, onNueva
           </p>
         )}
         <p className="sub">
-          Así se vería la tabla si la ley pidiera centímetros en la etiqueta y en la ficha en línea, en un formato que cualquier persona o agente puede leer. Aquí no va <b>nada tuyo</b>: solo las medidas de la prenda y de dónde salieron.
+          Así debería venir la talla de cualquier prenda: en centímetros, no solo con una letra. Aquí no va <b>nada tuyo</b>, solo las medidas de la prenda y de dónde salieron. Puedes guardarla o mandarla a alguien.
         </p>
         {etiqueta ? (
           <>
             <VistaEtiqueta e={etiqueta} />
             <div className="acciones">
-              <button type="button" className="btn prim" onClick={descargar}>Descargar como archivo (JSON)</button>
-              <button type="button" className="btn" onClick={copiar}>{copiado ? "Enlace copiado ✓" : "Copiar enlace para compartir"}</button>
-              <a className="btn" href="/api/etiquetas" target="_blank" rel="noreferrer">Ver el formato público</a>
+              <button type="button" className="btn prim" onClick={descargar}>Guardar la etiqueta</button>
+              <button type="button" className="btn" onClick={copiar}>{copiado ? "Enlace copiado ✓" : "Copiar enlace para mandar"}</button>
             </div>
             <p className="chico" style={{ marginTop: 8 }}>
-              El enlace lleva la etiqueta después del &ldquo;#&rdquo;: el navegador no lo manda al servidor y aquí no se guarda. Es un prototipo de la regla, no una norma vigente. <Link href="/regla">Ver la propuesta</Link>.
+              Es una propuesta de regla, no una norma vigente: <Link href="/regla">¿por qué en cm?</Link> · Para programadores: <a href="/api/etiquetas">formato público</a> (el archivo se guarda como JSON).
             </p>
           </>
         ) : (
@@ -85,7 +84,7 @@ export function PasoEtiqueta({ tabla, decisiones, setDecisiones, ultima, onNueva
       <section className="panel" aria-labelledby="t-dec">
         <h2 id="t-dec">Mis decisiones</h2>
         <p className="sub">Cuando llegue lo que compraste, anota cómo te quedó. Así sabrás si comparar en cm te sirve. Solo vive en este navegador.</p>
-        <p className="cuenta">
+        <p className="cuenta" style={{ fontFamily: "var(--sans)" }}>
           Decisiones guardadas: {c.total}
           <br />
           No compré: {c.noCompro} de {c.total} · Compré: {c.compraron} de {c.total}

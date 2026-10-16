@@ -51,8 +51,8 @@ export function PasoPausa({ tabla, resultado, inicial, onGuardar, onAtras }: Pro
 
   return (
     <section className="panel" aria-labelledby="t-pausa">
-      <h2 id="t-pausa">4 · Pausa antes de comprar</h2>
-      <p className="sub">Antes de decidir, dos cosas que la tabla no dice: cuánto te cuesta y qué pasa si no te queda. Todo es opcional. Puedes saltar esta pausa cuando quieras.</p>
+      <h2 id="t-pausa">4 · Antes de pagar</h2>
+      <p className="sub">Dos cosas que la tabla no dice: cuánto te cuesta y qué pasa si no te queda. Todo es opcional.</p>
 
       <h3>¿Cuánto cuesta?</h3>
       <div className="fila" style={{ alignItems: "flex-end" }}>
@@ -74,7 +74,19 @@ export function PasoPausa({ tabla, resultado, inicial, onGuardar, onAtras }: Pro
       )}
 
       <h3>¿Qué pasa si no te queda?</h3>
-      <p className="ayuda">Copia la política de devolución de la tienda y di de dónde la sacaste. Va aparte de las medidas: es otra fuente y también es de la tienda.</p>
+      <div className="campo">
+        <span className="etq">¿Devolver te cuesta?</span>
+        <div className="opciones" role="group" aria-label="¿Devolver cuesta?">
+          {(["si", "no", "nodice"] as const).map((c) => (
+            <button key={c} type="button" className="opcion" aria-pressed={dev.costo === c} onClick={() => setDev({ ...dev, costo: c })}>
+              {c === "si" ? "Sí cuesta" : c === "no" ? "Es gratis" : "No sé / no dice"}
+            </button>
+          ))}
+        </div>
+      </div>
+      <details>
+        <summary style={{ cursor: "pointer", fontWeight: 700 }}>Pegar la política de devolución (opcional)</summary>
+        <p className="ayuda">Va aparte de las medidas: es otra fuente y también es de la tienda. Di de dónde la sacaste.</p>
       <div className="campo">
         <label htmlFor="dev">Política de devolución (texto)</label>
         <textarea id="dev" maxLength={LIM.devolucion} disabled={dev.noEncontre} placeholder="Ej. Tienes 30 días para devolver. El envío de regreso lo pagas tú." value={dev.texto} onChange={(e) => setDev({ ...dev, texto: e.target.value })} />
@@ -86,18 +98,9 @@ export function PasoPausa({ tabla, resultado, inicial, onGuardar, onAtras }: Pro
       </div>
       <label className="check">
         <input type="checkbox" checked={dev.noEncontre} onChange={(e) => setDev({ ...dev, noEncontre: e.target.checked, texto: "", fuente: "" })} />
-        No la encontré
+        No la encontré o el vendedor no dice
       </label>
-      <div className="campo" style={{ marginTop: 10 }}>
-        <span className="etq">¿Devolver te cuesta?</span>
-        <div className="opciones" role="group" aria-label="¿Devolver cuesta?">
-          {(["si", "no", "nodice"] as const).map((c) => (
-            <button key={c} type="button" className="opcion" aria-pressed={dev.costo === c} onClick={() => setDev({ ...dev, costo: c })}>
-              {c === "si" ? "Sí cuesta" : c === "no" ? "Es gratis" : "No lo dice"}
-            </button>
-          ))}
-        </div>
-      </div>
+      </details>
       {dev.noEncontre && <p className="aviso gis">Sin política de devolución a la vista, si no te queda, no sabes qué pasa. Tómalo en cuenta.</p>}
 
       <h3>Tu decisión</h3>
@@ -129,8 +132,8 @@ export function PasoPausa({ tabla, resultado, inicial, onGuardar, onAtras }: Pro
 
       <div className="acciones">
         <button type="button" className="btn prim" onClick={() => guardar(false)}>Guardar mi decisión</button>
-        <button type="button" className="btn" onClick={() => guardar(true)}>Saltar la pausa y guardar solo la decisión</button>
-        <button type="button" className="btn" onClick={onAtras}>Volver a la comparación</button>
+        <button type="button" className="btn" onClick={() => guardar(true)}>Guardar solo la decisión</button>
+        <button type="button" className="btn" onClick={onAtras}>Volver</button>
       </div>
       <p className="chico" style={{ marginTop: 8 }}>Tu decisión se guarda solo en este navegador. Nadie más la ve.</p>
     </section>

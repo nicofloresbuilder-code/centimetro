@@ -59,6 +59,9 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
 
   const actual = filas ? aFilas(filas) : null;
   const cambios = leidas && actual ? contarCambios(leidas, actual.filas) : 0;
+  const sospechaPlano =
+    tipo === "prenda" && !plano && unidad === "cm" &&
+    Boolean(actual?.filas.some((f) => (["cintura", "cadera", "pecho"] as Medida[]).some((m) => { const r = f.medidas[m]; return r && r.min < 55; })));
 
   const cargarLectura = (t: Omit<Tabla, "tienda" | "producto" | "origen" | "correcciones" | "revisada">, org: Origen) => {
     setTipo(t.tipo); setUnidad(t.unidad); setPlano(t.plano); setFilas(aTexto(t.filas)); setOrigen(org);
@@ -67,9 +70,9 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
     setAviso(null);
   };
 
-  const leer = async (dataUrl: string) => {
+  const leer = async (dataUrl: string, conPermiso = permiso) => {
     setAviso(null); setNotas(null); setErrores([]);
-    if (!permiso) { setAviso("Para leer la captura con IA, primero marca el permiso. O escribe la tabla a mano."); return; }
+    if (!conPermiso) { setAviso("Para leer la captura con IA, primero marca el permiso. O escribe la tabla a mano."); return; }
     setLeyendo(true);
     try {
       const r = await fetch("/api/leer-tabla", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ imagen: dataUrl, categoria, permiso: true }) });
@@ -104,7 +107,7 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
       setImagen(d);
       if (!tienda) setTienda("Tienda Ejemplo (inventada)");
       if (!producto) setProducto("Jeans slim");
-      if (permiso) await leer(d);
+
     } catch (e) {
       setAviso((e as Error).message);
     }
@@ -117,7 +120,7 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
       numerosLeidos: leidas ? contarNumeros(leidas) : 0, correcciones: cambios, revisada: true,
     };
     const e = [...actual.malas, ...validarTabla(t)];
-    if (!revisada) e.unshift("Marca que revisaste cada número contra la tabla original.");
+    if (!revisada) e.unshift("Compara cada número con la tabla de la tienda y marca la casilla.");
     setErrores(e);
     if (e.length) return;
     setTabla({ ...t, leidas });
@@ -155,35 +158,53 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
         </div>
       </div>
 
-      <div className="aviso amarillo">
-        <label className="check">
-          <input type="checkbox" checked={permiso} onChange={(e) => setPermiso(e.target.checked)} />
-          <span>
-            <b>Usar IA (Gemini) para leer la captura y explicar el resultado.</b> La captura se manda a Google solo para leerla y aquí no se guarda. Sin permiso, nada sale de tu navegador: copias la tabla a mano y la explicación sale de una plantilla.
-          </span>
-        </label>
-        {ia === "simulado" && <p className="chico" style={{ margin: "6px 0 0" }}>Ojo: en este servidor la IA no está configurada. Puedes copiar la tabla a mano o usar la tabla de ejemplo.</p>}
-      </div>
-
+      <input ref={archivo} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => elegirArchivo(e.target.files?.[0])} />
+      {ia === "gemini" ? (
+        <div className="aviso amarillo">
+          <b>¿Tienes una captura de la tabla?</b> La IA la lee por ti y tú revisas los números.
+          <div className="acciones" style={{ marginTop: 10 }}>
+            <button type="button" className="btn prim" onClick={() => archivo.current?.click()}>Subir captura de la tabla</button>
+          </div>
+        </div>
+      ) : null}
       <div className="acciones">
-        <input ref={archivo} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => elegirArchivo(e.target.files?.[0])} />
-        <button type="button" className="btn cinta-btn" onClick={() => archivo.current?.click()}>Subir captura</button>
-        <button type="button" className="btn" onClick={probarCaptura}>Probar con una captura de ejemplo</button>
-        <button type="button" className="btn" onClick={() => { cargarLectura({ ...vaciaTabla(categoria) }, "manual"); }}>Escribir a mano</button>
-        {categoria === "abajo" && (
-          <button type="button" className="btn" onClick={() => { setTienda(TABLA_EJEMPLO.tienda); setProducto(TABLA_EJEMPLO.producto); cargarLectura(structuredClone(TABLA_EJEMPLO), "ejemplo"); }}>
-            Tabla de ejemplo (sin IA)
-          </button>
+        <button type="button" className={ia === "gemini" ? "btn chico-btn" : "btn prim"} onClick={() => { cargarLectura({ ...vaciaTabla(categoria) }, "manual"); }}>
+          {ia === "gemini" ? "Prefiero copiar los números a mano" : "Copiar los números de la tabla"}
+        </button>
+        {ia === "gemini" ? (
+          <button type="button" className="btn chico-btn" onClick={probarCaptura}>Probar con una captura de ejemplo</button>
+        ) : (
+          categoria === "abajo" && (
+            <button type="button" className="btn chico-btn" onClick={() => { setTienda(TABLA_EJEMPLO.tienda); setProducto(TABLA_EJEMPLO.producto); cargarLectura(structuredClone(TABLA_EJEMPLO), "ejemplo"); }}>
+              Probar con una tabla de ejemplo
+            </button>
+          )
         )}
       </div>
 
-      {imagen && (
+      {imagen && ia === "gemini" && (
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="vista-previa" src={imagen} alt="Tu captura de la tabla de tallas" />
-          <button type="button" className="btn prim" disabled={leyendo} onClick={() => leer(imagen)}>
-            {leyendo ? "Leyendo la tabla…" : "Leer con IA"}
-          </button>
+          {permiso ? (
+            <>
+              <p className="chico" style={{ margin: "4px 0 8px" }}>
+                Diste permiso de usar la IA de Google: la foto se manda solo para leerla y no se guarda.{" "}
+                <button type="button" className="btn chico-btn" onClick={() => setPermiso(false)}>Quitar permiso</button>
+              </p>
+              <button type="button" className="btn prim" disabled={leyendo} onClick={() => leer(imagen)}>
+                {leyendo ? "Leyendo la tabla…" : "Leer la tabla"}
+              </button>
+            </>
+          ) : (
+            <div className="aviso amarillo">
+              Para leerla, <b>tu foto se manda a la IA de Google</b>. No se guarda en ningún lado. La misma IA escribe la explicación del resultado (solo con números).
+              <div className="acciones" style={{ marginTop: 10 }}>
+                <button type="button" className="btn prim" disabled={leyendo} onClick={() => { setPermiso(true); leer(imagen, true); }}>Sí, leerla</button>
+                <button type="button" className="btn" onClick={() => { setImagen(null); cargarLectura({ ...vaciaTabla(categoria) }, "manual"); }}>No, la copio yo</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {aviso && <div className="aviso gis" role="status">{aviso}</div>}
@@ -199,12 +220,12 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
           {origen === "ejemplo" && <p className="aviso">Tabla de una tienda <b>inventada</b> para probar.</p>}
 
           <div className="campo">
-            <span className="etq">¿Estas medidas son de la prenda o del cuerpo?</span>
-            <p className="ayuda">Busca en la tabla algo como &ldquo;medidas de la prenda&rdquo; o &ldquo;medidas del cuerpo / cómo medirte&rdquo;. Si no lo dice, elige &ldquo;No lo dice&rdquo;: no adivinamos.</p>
+            <span className="etq">¿Quién midió: la ropa o a una persona?</span>
+            <p className="ayuda">Si la tabla dice &ldquo;medidas de la prenda&rdquo;, midieron la ropa. Si dice &ldquo;cómo medirte&rdquo; o &ldquo;medidas del cuerpo&rdquo;, midieron a una persona. Si no dice nada, elige &ldquo;No dice&rdquo;: no adivinamos.</p>
             <div className="opciones" role="group" aria-label="Tipo de medidas">
               {(["prenda", "cuerpo", "nodice"] as const).map((t) => (
                 <button key={t} type="button" className="opcion" aria-pressed={tipo === t} onClick={() => { setTipo(t); setRevisada(false); }}>
-                  {t === "prenda" ? "De la prenda" : t === "cuerpo" ? "Del cuerpo" : "No lo dice"}
+                  {t === "prenda" ? "Midieron la ropa" : t === "cuerpo" ? "Midieron a una persona" : "No dice"}
                 </button>
               ))}
             </div>
@@ -219,18 +240,23 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
             {tipo === "prenda" && (
               <label className="check">
                 <input type="checkbox" checked={plano} onChange={(e) => { setPlano(e.target.checked); setRevisada(false); }} />
-                Los contornos vienen a lo ancho (prenda acostada)
+                Cintura y cadera vienen de lado a lado (la mitad), no la vuelta completa
               </label>
             )}
           </div>
 
+          {sospechaPlano && (
+            <p className="aviso amarillo" role="status">
+              Ojo: hay cinturas o caderas de menos de 55 cm. Eso es muy poco para una vuelta completa. ¿La tabla las da de lado a lado? Si sí, marca la casilla de arriba.
+            </p>
+          )}
           <div className="rejilla-envoltura">
             <table className="rejilla">
               <thead>
                 <tr>
                   <th scope="col">Talla</th>
                   {medidas.map((m) => <th key={m} scope="col">{NOMBRE[m]}</th>)}
-                  <th scope="col"><span className="chico">quitar</span></th>
+                  <th scope="col"><span className="sr">Quitar</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -264,7 +290,7 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
 
           <label className="check" style={{ marginTop: 16 }}>
             <input type="checkbox" checked={revisada} onChange={(e) => setRevisada(e.target.checked)} />
-            <span><b>Revisé cada número contra la tabla original.</b> Lo que no aparece, lo dejé vacío.</span>
+            <span><b>Ya comparé cada número con la tabla de la tienda.</b> Lo que no aparece, lo dejé vacío.</span>
           </label>
 
           {errores.length > 0 && (

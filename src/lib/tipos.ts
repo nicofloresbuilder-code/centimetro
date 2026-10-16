@@ -17,7 +17,7 @@ export const MEDIDAS_CUERPO: Record<Categoria, Medida[]> = {
 export const NOMBRE: Record<Medida, string> = {
   cintura: "Cintura",
   cadera: "Cadera",
-  entrepierna: "Entrepierna",
+  entrepierna: "Largo interior",
   pecho: "Pecho",
   largo: "Largo",
   hombros: "Hombros",
@@ -28,10 +28,10 @@ export const NOMBRE: Record<Medida, string> = {
 export const CONTORNOS: Medida[] = ["cintura", "cadera", "pecho"];
 
 export const COMO_MEDIR: Record<Medida, string> = {
-  cintura: "Pantalón cerrado y acostado. Mide de lado a lado por la pretina.",
-  cadera: "Acostado, mide de lado a lado en la parte más ancha, a la altura del cierre.",
-  entrepierna: "Desde la costura del centro (entre las piernas) hasta el final de la pierna, por dentro.",
-  pecho: "Playera acostada. Mide de axila a axila.",
+  cintura: "Pantalón cerrado y acostado en la mesa. Mide de lado a lado por arriba, donde va el botón. No le des la vuelta: nosotros la duplicamos.",
+  cadera: "Acostado, mide de lado a lado en la parte más ancha, a la altura del final del cierre.",
+  entrepierna: "La entrepierna: desde la costura de en medio (entre las piernas) hasta el final de la pierna, por dentro.",
+  pecho: "Playera acostada. Mide de axila a axila. No le des la vuelta: nosotros la duplicamos.",
   largo: "Desde el punto más alto del hombro hasta el final de la prenda.",
   hombros: "De la costura de un hombro a la del otro, por la espalda.",
   manga: "Desde la costura del hombro hasta el final de la manga.",

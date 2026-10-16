@@ -10,7 +10,7 @@ import { PasoComparar } from "./PasoComparar";
 import { PasoPausa } from "./PasoPausa";
 import { PasoEtiqueta } from "./PasoEtiqueta";
 
-const PASOS = ["Tu prenda", "La tabla", "Comparar", "Pausa", "Etiqueta en cm"];
+const PASOS = ["Tu prenda", "La tabla", "Comparar", "Antes de pagar", "Etiqueta en cm"];
 
 export const REF_VACIA: Referencia = { categoria: "abajo", nombre: "", plano: {}, estira: "nose" };
 
@@ -68,7 +68,6 @@ export default function Centimetro() {
   return (
     <>
       <div className="chips" style={{ marginBottom: 6 }}>
-        <span className={`chip ${ia === "gemini" ? "ok" : "gis"}`}>{ia === "gemini" ? "IA: Gemini conectado" : ia === "?" ? "IA: revisando…" : "IA: no configurada (sin IA)"}</span>
         <span className="chip">Tus medidas: solo en este navegador</span>
         <span className="chip">Sin cuenta</span>
       </div>

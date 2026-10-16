@@ -34,7 +34,7 @@ export function PasoPrenda({ refe, setRef, cuerpo, setCuerpo, onSeguir }: Props)
     <section className="panel" aria-labelledby="t-prenda">
       <h2 id="t-prenda">1 · Una prenda tuya que te quede bien</h2>
       <p className="sub">
-        No te midas tú: <b>mide una prenda que ya tienes y te gusta cómo te queda</b>. Acuéstala en una mesa y usa una cinta o una regla. Lo que no sepas, déjalo en &ldquo;no sé&rdquo;. Nunca lo inventamos.
+        No te midas tú: <b>mide una prenda que ya tienes y te gusta cómo te queda</b>. Acuéstala en una mesa y usa una cinta de costura o una regla (si es corta, mide por partes y suma). Lo que no sepas, déjalo en &ldquo;no sé&rdquo;. Nunca lo inventamos.
       </p>
 
       <div className="campo">
@@ -58,7 +58,7 @@ export function PasoPrenda({ refe, setRef, cuerpo, setCuerpo, onSeguir }: Props)
           <div className="medida" key={m}>
             <div>
               <label className="etq" htmlFor={`m-${m}`}>
-                {NOMBRE[m]} {contorno && <span className="chico">(a lo ancho)</span>}
+                {NOMBRE[m]} {contorno && <span className="chico">(de lado a lado)</span>}
               </label>
               <p className="ayuda">{COMO_MEDIR[m]}</p>
             </div>
@@ -84,7 +84,7 @@ export function PasoPrenda({ refe, setRef, cuerpo, setCuerpo, onSeguir }: Props)
               </label>
               {contorno && typeof v === "number" && (
                 <p className="eco" id={`eco-${m}`}>
-                  Contorno ≈ {medio(v * 2)} cm
+                  Vuelta completa ≈ {medio(v * 2)} cm
                 </p>
               )}
             </div>
@@ -132,7 +132,7 @@ export function PasoPrenda({ refe, setRef, cuerpo, setCuerpo, onSeguir }: Props)
       <div className="acciones">
         <button type="button" className="btn prim" onClick={seguir}>Seguir a la tabla de la tienda</button>
         <button type="button" className="btn" onClick={() => { setRef(structuredClone(REF_EJEMPLO)); setErrores([]); }}>
-          Llenar con el ejemplo inventado
+          Ver cómo funciona con un ejemplo
         </button>
       </div>
     </section>

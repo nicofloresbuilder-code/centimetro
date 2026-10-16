@@ -99,7 +99,7 @@ prueba("enlace no pasa", !revisarExplicacion("La 32 se parece más, mira https:/
 prueba("'no sabemos si te queda' pasa", revisarExplicacion("La 32 se parece más en números, pero no sabemos si te queda por el largo.", r).ok);
 prueba("plantilla pasa su propio filtro", revisarExplicacion(explicacionPlantilla(r, REF_EJEMPLO.nombre), r).ok);
 prueba("plantilla empate pasa", revisarExplicacion(explicacionPlantilla(re, "pantalón"), re).ok);
-prueba("plantilla menciona la falta", explicacionPlantilla(r, "pantalón").includes("entrepierna"));
+prueba("plantilla menciona la falta", explicacionPlantilla(r, "pantalón").includes("largo interior"));
 
 // Pausa
 prueba("devolución sin fuente no", validarDevolucion({ texto: "30 días", fuente: "", noEncontre: false, costo: "nodice", consultada: "2026-10-16" }).length > 0);
