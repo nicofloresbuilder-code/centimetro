@@ -1,0 +1,104 @@
+/* Solo servidor: llamadas a Gemini y límite de uso.
+   La llave GEMINI_API_KEY vive en Vercel y nunca llega al navegador. */
+
+const BASE = "https://generativelanguage.googleapis.com/v1beta";
+const PREFERIDO = process.env.GEMINI_MODEL || "gemini-flash-latest";
+
+export function hayLlave(): boolean {
+  return Boolean(process.env.GEMINI_API_KEY);
+}
+
+type Parte = { text: string } | { inlineData: { mimeType: string; data: string } };
+
+/* Lección de la semana 9: Google retira modelos (404) y a veces se satura (503).
+   Si el modelo falla, se pide la lista de modelos Flash disponibles y se usa otro. */
+let modeloVigente: string | null = null;
+
+async function elegirModelo(llave: string, evitar: string): Promise<string | null> {
+  try {
+    const r = await fetch(`${BASE}/models?pageSize=200`, { headers: { "x-goog-api-key": llave } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const nombres: string[] = (j?.models ?? [])
+      .filter((m: { supportedGenerationMethods?: string[] }) => m.supportedGenerationMethods?.includes("generateContent"))
+      .map((m: { name: string }) => String(m.name).replace(/^models\//, ""));
+    const flash = nombres.filter((n) => /flash/.test(n) && !/(image|tts|audio|live|exp|preview|latest|lite)/.test(n) && n !== evitar);
+    return flash.sort().reverse()[0] ?? nombres.find((n) => /flash/.test(n) && n !== evitar) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function llamar(modelo: string, llave: string, sistema: string, partes: Parte[], signal: AbortSignal): Promise<Response> {
+  return fetch(`${BASE}/models/${modelo}:generateContent`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-goog-api-key": llave },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: sistema }] },
+      contents: [{ role: "user", parts: partes }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.2,
+        maxOutputTokens: 4096,
+        ...(/2\.5-flash/.test(modelo) ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+      },
+    }),
+    signal,
+  });
+}
+
+/** Llama a Gemini pidiendo JSON. Devuelve { datos, modelo } o null si algo falla. */
+export async function gemini(sistema: string, partes: Parte[]): Promise<{ datos: unknown; modelo: string } | null> {
+  const llave = process.env.GEMINI_API_KEY;
+  if (!llave) return null;
+  const ctrl = new AbortController();
+  const reloj = setTimeout(() => ctrl.abort(), 28000);
+  try {
+    let modelo = modeloVigente ?? PREFERIDO;
+    let r = await llamar(modelo, llave, sistema, partes, ctrl.signal);
+    if (r.status === 503 || r.status === 429 || r.status === 500) {
+      await new Promise((ok) => setTimeout(ok, 1500));
+      r = await llamar(modelo, llave, sistema, partes, ctrl.signal);
+    }
+    if ([400, 404, 500, 503].includes(r.status)) {
+      const otro = await elegirModelo(llave, modelo);
+      console.error(`Gemini respondió ${r.status} con ${modelo}; se intenta con ${otro}`);
+      if (otro) {
+        modelo = otro;
+        r = await llamar(modelo, llave, sistema, partes, ctrl.signal);
+      }
+    }
+    if (!r.ok) {
+      console.error("Gemini respondió", r.status, "con", modelo);
+      return null;
+    }
+    modeloVigente = modelo;
+    const j = await r.json();
+    const texto: string | undefined = j?.candidates?.[0]?.content?.parts
+      ?.filter((p: { thought?: boolean }) => !p.thought)
+      .map((p: { text?: string }) => p.text ?? "")
+      .join("");
+    if (!texto) return null;
+    return { datos: JSON.parse(texto.replace(/^```(?:json)?\s*|\s*```$/g, "")), modelo };
+  } catch (e) {
+    console.error("Gemini falló:", (e as Error).name);
+    return null;
+  } finally {
+    clearTimeout(reloj);
+  }
+}
+
+/* Límite por IP en memoria de cada instancia: suficiente para un prototipo. */
+const visitas = new Map<string, number[]>();
+export function permitido(ip: string, max = 20, ventanaMs = 10 * 60 * 1000): boolean {
+  const ahora = Date.now();
+  const lista = (visitas.get(ip) ?? []).filter((t) => ahora - t < ventanaMs);
+  if (lista.length >= max) return false;
+  lista.push(ahora);
+  visitas.set(ip, lista);
+  return true;
+}
+
+export function ipDe(req: Request): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+}
