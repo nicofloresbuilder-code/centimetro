@@ -172,3 +172,13 @@ Paro o cambio el enfoque si en las pruebas pasa una de estas tres cosas:
 - La persona del test no entiende **qué medir** sin ayuda.
 
 Si pasa la segunda, no es un fracaso de la tesis: es evidencia para la regla.
+
+---
+
+## Cambios después del packet
+
+- **El permiso de IA se pide al momento de leer la foto**, no con una casilla al inicio (persona test, ronda 1).
+- **"Pausa" ahora se llama "Antes de pagar"** y la política de devolución quedó como opcional (persona test).
+- **El camino a mano empieza con 2 tallas**, no con la tabla completa (persona test, ronda 2).
+- **Se agregó un aviso** cuando una cintura o cadera parece venir "de lado a lado". El packet no lo tenía y salió de la prueba con Doña Lupe.
+- "Entrepierna" ahora se llama "Largo interior" en la interfaz. El formato de la etiqueta sigue usando la clave `entrepierna`.
