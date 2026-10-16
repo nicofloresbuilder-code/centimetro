@@ -132,7 +132,6 @@ export function PasoPausa({ tabla, resultado, inicial, onGuardar, onAtras }: Pro
 
       <div className="acciones">
         <button type="button" className="btn prim" onClick={() => guardar(false)}>Guardar mi decisión</button>
-        <button type="button" className="btn" onClick={() => guardar(true)}>Guardar solo la decisión</button>
         <button type="button" className="btn" onClick={onAtras}>Volver</button>
       </div>
       <p className="chico" style={{ marginTop: 8 }}>Tu decisión se guarda solo en este navegador. Nadie más la ve.</p>

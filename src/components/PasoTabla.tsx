@@ -21,7 +21,7 @@ type FilaTexto = { talla: string; valores: Partial<Record<Medida, string>> };
 const aTexto = (filas: FilaTalla[]): FilaTexto[] =>
   filas.map((f) => ({ talla: f.talla, valores: Object.fromEntries(Object.entries(f.medidas).map(([m, r]) => [m, rangoATexto(r)])) }));
 
-const vacia = (cat: Categoria): FilaTexto[] => ["S", "M", "L"].map((t) => ({ talla: t, valores: Object.fromEntries(MEDIDAS[cat].map((m) => [m, ""])) }));
+const vacia = (cat: Categoria): FilaTexto[] => ["", ""].map((t) => ({ talla: t, valores: Object.fromEntries(MEDIDAS[cat].map((m) => [m, ""])) }));
 
 export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia, onSeguir, onAtras }: Props) {
   const usable = tabla && tabla.categoria === categoria ? tabla : null;
@@ -186,6 +186,7 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="vista-previa" src={imagen} alt="Tu captura de la tabla de tallas" />
+          <p className="chico" style={{ margin: "0 0 8px" }}>Si viene en inglés o en pulgadas, no importa: lo pasamos a centímetros.</p>
           {permiso ? (
             <>
               <p className="chico" style={{ margin: "4px 0 8px" }}>
@@ -263,7 +264,7 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
                 {filas.map((f, i) => (
                   <tr key={i}>
                     <td className="talla">
-                      <input aria-label={`Talla fila ${i + 1}`} value={f.talla} onChange={(e) => editar(i, "talla", e.target.value)} />
+                      <input aria-label={`Talla fila ${i + 1}`} placeholder="32" value={f.talla} onChange={(e) => editar(i, "talla", e.target.value)} />
                     </td>
                     {medidas.map((m) => (
                       <td key={m}>
@@ -285,7 +286,7 @@ export function PasoTabla({ categoria, tabla, setTabla, permiso, setPermiso, ia,
               </tbody>
             </table>
           </div>
-          <p className="ayuda">Escribe un número (82) o un rango (80-84). Vacío = la tienda no lo da.</p>
+          <p className="ayuda">Solo copia las tallas que estás pensando (mínimo 2). Escribe un número (82) o un rango (80-84). Vacío = la tienda no lo da.</p>
           <button type="button" className="btn chico-btn" disabled={filas.length >= 12} onClick={() => setFilas([...filas, { talla: "", valores: {} }])}>+ Agregar talla</button>
 
           <label className="check" style={{ marginTop: 16 }}>

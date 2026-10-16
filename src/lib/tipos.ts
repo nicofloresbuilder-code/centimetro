@@ -24,13 +24,24 @@ export const NOMBRE: Record<Medida, string> = {
   manga: "Manga",
 };
 
+/* "la cintura", "el largo interior": para escribir bien las frases. */
+export const CON_ARTICULO: Record<Medida, string> = {
+  cintura: "la cintura",
+  cadera: "la cadera",
+  entrepierna: "el largo interior",
+  pecho: "el pecho",
+  largo: "el largo",
+  hombros: "los hombros",
+  manga: "la manga",
+};
+
 /* Las que se miden "a lo ancho" con la prenda acostada y luego se duplican. */
 export const CONTORNOS: Medida[] = ["cintura", "cadera", "pecho"];
 
 export const COMO_MEDIR: Record<Medida, string> = {
   cintura: "Pantalón cerrado y acostado en la mesa. Mide de lado a lado por arriba, donde va el botón. No le des la vuelta: nosotros la duplicamos.",
   cadera: "Acostado, mide de lado a lado en la parte más ancha, a la altura del final del cierre.",
-  entrepierna: "La entrepierna: desde la costura de en medio (entre las piernas) hasta el final de la pierna, por dentro.",
+  entrepierna: "La entrepierna: desde la costura de en medio (entre las piernas) hasta el final de la pierna, por dentro. No es el tiro.",
   pecho: "Playera acostada. Mide de axila a axila. No le des la vuelta: nosotros la duplicamos.",
   largo: "Desde el punto más alto del hombro hasta el final de la prenda.",
   hombros: "De la costura de un hombro a la del otro, por la espalda.",

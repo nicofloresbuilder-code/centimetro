@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { NOMBRE, type Cuerpo, type Referencia, type Resultado, type Tabla } from "@/lib/tipos";
+import { CON_ARTICULO, NOMBRE, type Cuerpo, type Referencia, type Resultado, type Tabla } from "@/lib/tipos";
 import { difTexto, explicacionPlantilla, nombrePrenda } from "@/lib/motor";
 
 type Props = {
@@ -51,10 +51,10 @@ export function PasoComparar({ refe, cuerpo, tabla, resultado: r, permiso, onPau
         {tabla.producto} · {tabla.tienda}
       </p>
       <div className="chips">
-        <span className="chip gis">Tabla hecha por la tienda: puede fallar</span>
+        <span className="chip">Tabla hecha por la tienda: puede fallar</span>
         <span className="chip">{tabla.tipo === "prenda" ? "Medidas de la prenda" : tabla.tipo === "cuerpo" ? "Medidas del cuerpo" : "No dice de qué son"}</span>
         <span className="chip ok">Revisada por ti ✓</span>
-        {tabla.origen === "ejemplo" && <span className="chip gis">EJEMPLO INVENTADO</span>}
+        {tabla.origen === "ejemplo" && <span className="chip">Ejemplo inventado</span>}
       </div>
 
       {!r.ok ? (
@@ -125,9 +125,9 @@ export function PasoComparar({ refe, cuerpo, tabla, resultado: r, permiso, onPau
                 {r.faltan.map((f) => (
                   <li key={f.medida}>
                     {f.de === "tuya" ? (
-                      <>No sabes la {NOMBRE[f.medida].toLowerCase()} de {r.base === "prenda" ? "tu prenda" : "tu cuerpo"}. ¿La puedes medir? <button className="btn chico-btn" onClick={onEditarPrenda}>Agregarla</button></>
+                      <>No sabes {CON_ARTICULO[f.medida]} de {r.base === "prenda" ? "tu prenda" : "tu cuerpo"}. ¿La puedes medir? <button className="btn chico-btn" onClick={onEditarPrenda}>Agregarla</button></>
                     ) : (
-                      <>La tienda no da la {NOMBRE[f.medida].toLowerCase()}{r.tallas.some((t) => t.celdas.find((c) => c.medida === f.medida)?.tienda) ? " en todas las tallas" : ""}. Eso queda como incógnita.</>
+                      <>La tienda no da {CON_ARTICULO[f.medida]}{r.tallas.some((t) => t.celdas.find((c) => c.medida === f.medida)?.tienda) ? " en todas las tallas" : ""}. Eso queda como incógnita.</>
                     )}
                   </li>
                 ))}

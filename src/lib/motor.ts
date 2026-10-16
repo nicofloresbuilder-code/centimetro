@@ -2,7 +2,7 @@
    navegador y en el servidor. La IA lee y explica; el motor calcula. */
 
 import {
-  CONTORNOS, MEDIDAS, MEDIDAS_CUERPO, NOMBRE,
+  CON_ARTICULO, CONTORNOS, MEDIDAS, MEDIDAS_CUERPO, NOMBRE,
   type Categoria, type Celda, type Cuerpo, type EtiquetaCm, type FilaTalla, type Medida,
   type Rango, type Referencia, type Resultado, type ResultadoTalla, type Tabla, type TipoTabla,
   type Unidad, type RegistroDecision, type Devolucion,
@@ -367,10 +367,10 @@ export function explicacionPlantilla(r: Resultado, nombreRef: string): string {
   } else if (r.empate.length) {
     partes.push(`Las tallas ${r.empate.join(" y ")} quedan casi igual de cerca de ${contra}. Depende de si lo prefieres más justo o más holgado.`);
   } else if (r.motivo) partes.push(r.motivo);
-  const ft = r.faltan.filter((f) => f.de === "tienda").map((f) => NOMBRE[f.medida].toLowerCase());
-  const fy = r.faltan.filter((f) => f.de === "tuya").map((f) => NOMBRE[f.medida].toLowerCase());
-  if (ft.length) partes.push(`La tienda no da ${ft.join(", ")}, así que eso es una incógnita.`);
-  if (fy.length) partes.push(`No sabes la ${fy.join(" ni la ")} de tu prenda; si la mides, la comparación mejora.`);
+  const ft = r.faltan.filter((f) => f.de === "tienda").map((f) => CON_ARTICULO[f.medida]);
+  const fy = r.faltan.filter((f) => f.de === "tuya").map((f) => CON_ARTICULO[f.medida]);
+  if (ft.length) partes.push(`La tienda no da ${ft.join(" ni ")}, así que eso es una incógnita.`);
+  if (fy.length) partes.push(`No sabes ${fy.join(" ni ")} de ${r.base === "prenda" ? "tu prenda" : "tu cuerpo"}; si lo mides, la comparación mejora.`);
   partes.push("Esto no garantiza cómo te va a quedar: la tabla es de la tienda.");
   return partes.join(" ");
 }
