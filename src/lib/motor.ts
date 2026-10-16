@@ -346,11 +346,17 @@ export function difTexto(d: number): string {
   return `${d > 0 ? "+" : "−"}${f1(Math.abs(d))} cm`;
 }
 
+/** "Mi Pantalón azul" → "pantalón azul", para poder decir "tu pantalón azul". */
+export function nombrePrenda(n: string): string {
+  const t = n.trim().replace(/^(mi|mis|tu|tus|el|la)\s+/i, "");
+  return (t || "prenda").replace(/^\p{Lu}(?!\p{Lu})/u, (c) => c.toLowerCase());
+}
+
 /** Explicación sin IA: la misma información, con reglas fijas. */
 export function explicacionPlantilla(r: Resultado, nombreRef: string): string {
   if (!r.ok) return r.motivo ?? "No se pudo comparar.";
   const partes: string[] = [];
-  const contra = r.base === "prenda" ? `tu ${nombreRef.toLowerCase()}` : "tus medidas del cuerpo";
+  const contra = r.base === "prenda" ? `tu ${nombrePrenda(nombreRef)}` : "tus medidas del cuerpo";
   if (r.masParecida) {
     const t = r.tallas.find((x) => x.talla === r.masParecida)!;
     const det = t.celdas
@@ -364,7 +370,7 @@ export function explicacionPlantilla(r: Resultado, nombreRef: string): string {
   const ft = r.faltan.filter((f) => f.de === "tienda").map((f) => NOMBRE[f.medida].toLowerCase());
   const fy = r.faltan.filter((f) => f.de === "tuya").map((f) => NOMBRE[f.medida].toLowerCase());
   if (ft.length) partes.push(`La tienda no da ${ft.join(", ")}, así que eso es una incógnita.`);
-  if (fy.length) partes.push(`Tú no sabes ${fy.join(", ")}; si lo mides, la comparación mejora.`);
+  if (fy.length) partes.push(`No sabes la ${fy.join(" ni la ")} de tu prenda; si la mides, la comparación mejora.`);
   partes.push("Esto no garantiza cómo te va a quedar: la tabla es de la tienda.");
   return partes.join(" ");
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { NOMBRE, type Cuerpo, type Referencia, type Resultado, type Tabla } from "@/lib/tipos";
-import { difTexto, explicacionPlantilla } from "@/lib/motor";
+import { difTexto, explicacionPlantilla, nombrePrenda } from "@/lib/motor";
 
 type Props = {
   refe: Referencia;
@@ -41,7 +41,7 @@ export function PasoComparar({ refe, cuerpo, tabla, resultado: r, permiso, onPau
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clave]);
 
-  const nombre = (refe.nombre || "prenda").replace(/^\p{Lu}/u, (c) => c.toLowerCase());
+  const nombre = nombrePrenda(refe.nombre);
   const contra = r.base === "prenda" ? `tu ${nombre}` : "tu cuerpo";
 
   return (
