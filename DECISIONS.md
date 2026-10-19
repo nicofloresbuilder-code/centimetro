@@ -42,7 +42,14 @@
 | # | Qué | Resultado |
 |---|---|---|
 | 1 | Primer deploy desde GitHub a Vercel (equipo dime5), sin `GEMINI_API_KEY` | `centimetro.vercel.app` en vivo; `/api/estado` responde `{"ia":"simulado"}` y la app funciona copiando la tabla a mano |
-| 2 | Se agregó `GEMINI_API_KEY` en Vercel (la pegó Nicolás; nunca pasó por el chat ni por el repo) y se volvió a desplegar con este commit | Lectura de capturas con Gemini real (resultado abajo, en "Prueba 8") |
+| 2 | Se agregó `GEMINI_API_KEY` en Vercel. La pegó Nicolás y nunca pasó por el chat ni por el repo. Se volvió a desplegar | La lectura de capturas falló por tiempo (ver Bugs) |
+| 3 | Límite de tiempo por intento y modelo pensando poco | Gemini saturado (503) y el respaldo eligió un modelo sin cuota (ver Bugs) |
+| 4 | Respaldo solo con modelos Flash normales | Funciona (prueba 8) |
+
+## Prueba 8: Gemini real en producción (centimetro.vercel.app)
+
+- **Lectura de la captura de ejemplo** (tabla inventada, en pulgadas y en inglés). Gemini leyó **15 de 15 números** bien y detectó que eran medidas de la prenda, que venían en pulgadas y que no eran "a lo ancho". Se necesitaron **0 correcciones** y tardó 5.2 s. La condición para parar del packet (más de 1 de cada 4 números corregidos) no se activó con esta captura. Falta probar con tablas reales.
+- **Explicación.** Las dos respuestas pasaron el filtro: no prometen ajuste, no recomiendan comprar y todos sus números los calculó el motor. Revisé las cuentas a mano: la 32 queda a +2 cm de cintura, +0.5 cm de cadera y largo igual (2.5 cm en total); la 30 a 5.5 cm y la 34 a 15 cm. Tardó entre 2.4 y 9 s.
 
 ## Lo que no se construyó
 
