@@ -30,7 +30,9 @@ async function modelosRespaldo(llave: string, evitar: string): Promise<string[]>
       .map((m: { name: string }) => String(m.name).replace(/^models\//, ""));
     const normales = nombres.filter((n) => /^gemini-\d+(\.\d+)?-flash$/.test(n)).sort((x, y) => version(y) - version(x));
     const lite = nombres.filter((n) => /^gemini-\d+(\.\d+)?-flash-lite$/.test(n)).sort((x, y) => version(y) - version(x));
-    return [...normales, ...lite].filter((n) => n !== evitar);
+    // Bug del deploy 6: con capturas reales, los Flash normales tardaron más de 25 s.
+    // El respaldo empieza por el "lite" más nuevo (más rápido) y luego un Flash normal.
+    return [lite[0], normales[0], lite[1]].filter((n): n is string => Boolean(n) && n !== evitar);
   } catch {
     return [];
   }
@@ -42,7 +44,7 @@ async function modelosRespaldo(llave: string, evitar: string): Promise<string[]>
    no acepta la configuración de pensamiento (400), se repite sin ella. */
 function configPensamiento(modelo: string): Record<string, unknown> {
   if (/2\.5-flash/.test(modelo)) return { thinkingConfig: { thinkingBudget: 0 } };
-  if (/^gemini-(3|flash-latest)/.test(modelo)) return { thinkingConfig: { thinkingLevel: "low" } };
+  if (/^gemini-(3|flash-latest)/.test(modelo)) return { thinkingConfig: { thinkingLevel: "minimal" } };
   return {};
 }
 
@@ -87,18 +89,22 @@ export async function gemini(sistema: string, partes: Parte[]): Promise<{ datos:
   const queda = () => 55000 - (Date.now() - inicio);
   try {
     let modelo = modeloVigente ?? PREFERIDO;
-    let r = await llamar(modelo, llave, sistema, partes, 25000);
-    if ([429, 500, 503].includes(r.status) && queda() > 15000) {
+    let t = Date.now();
+    let r = await llamar(modelo, llave, sistema, partes, 28000);
+    console.log(`Gemini ${modelo}: ${r.status} en ${Date.now() - t} ms`);
+    if ([429, 500, 503].includes(r.status) && queda() > 20000) {
       await new Promise((ok) => setTimeout(ok, 1500));
       r = await llamar(modelo, llave, sistema, partes, Math.min(25000, queda() - 2000));
     }
     if ([400, 404, 429, 500, 503, 504].includes(r.status) && queda() > 8000) {
-      const otros = (await modelosRespaldo(llave, modelo)).slice(0, 3);
+      const otros = await modelosRespaldo(llave, modelo);
       for (const otro of otros) {
         if (queda() < 8000) break;
         console.error(`Gemini respondió ${r.status} con ${modelo}; se intenta con ${otro}`);
         modelo = otro;
-        r = await llamar(modelo, llave, sistema, partes, Math.min(25000, queda() - 2000));
+        t = Date.now();
+        r = await llamar(modelo, llave, sistema, partes, queda() - 2000);
+        console.log(`Gemini ${modelo}: ${r.status} en ${Date.now() - t} ms`);
         if (r.ok) break;
       }
     }

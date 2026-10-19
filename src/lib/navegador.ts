@@ -35,7 +35,7 @@ export const hoy = () => {
 
 const TIPOS = ["image/jpeg", "image/png", "image/webp"];
 
-/** Reduce la imagen en el navegador (máx. 1600 px, JPEG) para mandarla ligera. */
+/** Reduce la imagen en el navegador (máx. 1280 px, JPEG) para mandarla ligera. */
 export async function prepararImagen(archivo: Blob): Promise<string> {
   if (!TIPOS.includes(archivo.type)) throw new Error("La imagen debe ser JPG, PNG o WEBP.");
   if (archivo.size > 12 * 1024 * 1024) throw new Error("La imagen pesa más de 12 MB.");
@@ -47,7 +47,7 @@ export async function prepararImagen(archivo: Blob): Promise<string> {
       i.onerror = () => mal(new Error("No se pudo abrir la imagen."));
       i.src = url;
     });
-    let escala = Math.min(1, 1600 / Math.max(img.width, img.height));
+    let escala = Math.min(1, 1280 / Math.max(img.width, img.height));
     for (let intento = 0; intento < 4; intento++) {
       const c = document.createElement("canvas");
       c.width = Math.round(img.width * escala);

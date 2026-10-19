@@ -35,6 +35,7 @@
 | El enlace roto contaba 2 alertas (el anunciador de rutas de Next también es una alerta) | Pase mecánico | La prueba ahora revisa el texto |
 | En producción, leer la captura con Gemini falló con `AbortError`: el modelo tardó más de 28 s pensando | Logs de Vercel después del deploy 2 | Se pide pensar poco (`thinkingLevel: low`, o `thinkingBudget: 0` en 2.5), cada intento tiene su propio límite, un tiempo agotado pasa a otro modelo Flash y la función puede durar hasta 60 s |
 | Después, `gemini-flash-latest` respondió 503 (saturado) y el plan B eligió `gemini-omni-1.1-flash`, sin cuota gratuita (429) | Logs de Vercel, deploy 4 | El plan B solo usa modelos Flash con versión normal (del más nuevo al más viejo, luego "lite") y prueba hasta 3 |
+| Con capturas reales de Nicolás, `gemini-flash-latest` y los Flash 3.x se pasaron de 25 s (504) en cuatro intentos seguidos | Logs de Vercel, deploy 6 | Pensamiento mínimo, imagen de máximo 1280 px, primer intento de 28 s, respaldo que empieza por el Flash "lite" (más rápido) y registro de cuánto tarda cada intento |
 | Persona test, 2 rondas, 20 confusiones | `docs/PERSONA.md` | 18 se arreglaron; 1 queda como límite conocido |
 
 ## Deploys
