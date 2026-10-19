@@ -4,7 +4,7 @@ import { LIM, sanearLectura } from "@/lib/motor";
 import { sistemaLeer } from "@/lib/prompts";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const TIPOS = new Set(["image/jpeg", "image/png", "image/webp"]);
 

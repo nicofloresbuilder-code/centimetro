@@ -29,43 +29,68 @@ async function elegirModelo(llave: string, evitar: string): Promise<string | nul
   }
 }
 
-async function llamar(modelo: string, llave: string, sistema: string, partes: Parte[], signal: AbortSignal): Promise<Response> {
-  return fetch(`${BASE}/models/${modelo}:generateContent`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": llave },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: sistema }] },
-      contents: [{ role: "user", parts: partes }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.2,
-        maxOutputTokens: 4096,
-        ...(/2\.5-flash/.test(modelo) ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
-      },
-    }),
-    signal,
-  });
+/* Bug del deploy 2: con la captura, gemini-flash-latest tardó más de 28 s
+   ("AbortError") porque el modelo "piensa" antes de contestar. Ahora se pide
+   pensar poco, cada intento tiene su propio límite de tiempo y, si el modelo
+   no acepta la configuración de pensamiento (400), se repite sin ella. */
+function configPensamiento(modelo: string): Record<string, unknown> {
+  if (/2\.5-flash/.test(modelo)) return { thinkingConfig: { thinkingBudget: 0 } };
+  if (/^gemini-(3|flash-latest)/.test(modelo)) return { thinkingConfig: { thinkingLevel: "low" } };
+  return {};
+}
+
+async function llamar(modelo: string, llave: string, sistema: string, partes: Parte[], ms: number, pensamiento = true): Promise<Response> {
+  const ctrl = new AbortController();
+  const reloj = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(`${BASE}/models/${modelo}:generateContent`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": llave },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: sistema }] },
+        contents: [{ role: "user", parts: partes }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2,
+          maxOutputTokens: 4096,
+          ...(pensamiento ? configPensamiento(modelo) : {}),
+        },
+      }),
+      signal: ctrl.signal,
+    });
+    if (r.status === 400 && pensamiento && Object.keys(configPensamiento(modelo)).length) {
+      clearTimeout(reloj);
+      return llamar(modelo, llave, sistema, partes, ms, false);
+    }
+    return r;
+  } catch (e) {
+    // Tiempo agotado o red caída: se responde como "saturado" para probar otro modelo.
+    console.error(`Gemini (${modelo}) no respondió:`, (e as Error).name);
+    return new Response(null, { status: 504 });
+  } finally {
+    clearTimeout(reloj);
+  }
 }
 
 /** Llama a Gemini pidiendo JSON. Devuelve { datos, modelo } o null si algo falla. */
 export async function gemini(sistema: string, partes: Parte[]): Promise<{ datos: unknown; modelo: string } | null> {
   const llave = process.env.GEMINI_API_KEY;
   if (!llave) return null;
-  const ctrl = new AbortController();
-  const reloj = setTimeout(() => ctrl.abort(), 28000);
+  const inicio = Date.now();
+  const queda = () => 55000 - (Date.now() - inicio);
   try {
     let modelo = modeloVigente ?? PREFERIDO;
-    let r = await llamar(modelo, llave, sistema, partes, ctrl.signal);
-    if (r.status === 503 || r.status === 429 || r.status === 500) {
+    let r = await llamar(modelo, llave, sistema, partes, 30000);
+    if ([429, 500, 503].includes(r.status) && queda() > 15000) {
       await new Promise((ok) => setTimeout(ok, 1500));
-      r = await llamar(modelo, llave, sistema, partes, ctrl.signal);
+      r = await llamar(modelo, llave, sistema, partes, Math.min(25000, queda() - 2000));
     }
-    if ([400, 404, 500, 503].includes(r.status)) {
+    if ([400, 404, 500, 503, 504].includes(r.status) && queda() > 8000) {
       const otro = await elegirModelo(llave, modelo);
       console.error(`Gemini respondió ${r.status} con ${modelo}; se intenta con ${otro}`);
       if (otro) {
         modelo = otro;
-        r = await llamar(modelo, llave, sistema, partes, ctrl.signal);
+        r = await llamar(modelo, llave, sistema, partes, Math.max(5000, queda() - 2000));
       }
     }
     if (!r.ok) {
@@ -83,8 +108,6 @@ export async function gemini(sistema: string, partes: Parte[]): Promise<{ datos:
   } catch (e) {
     console.error("Gemini falló:", (e as Error).name);
     return null;
-  } finally {
-    clearTimeout(reloj);
   }
 }
 

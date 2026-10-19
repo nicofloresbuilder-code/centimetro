@@ -4,7 +4,7 @@ import { comparar, explicacionPlantilla, leerCuerpo, leerReferencia, leerTabla, 
 import { SISTEMA_EXPLICAR, datosParaExplicar } from "@/lib/prompts";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 /* El servidor vuelve a correr las reglas: lo que diga el navegador no basta.
    A la IA solo le llegan los números ya calculados, sin nombres. */
