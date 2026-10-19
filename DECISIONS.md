@@ -35,6 +35,13 @@
 | El enlace roto contaba 2 alertas (el anunciador de rutas de Next también es una alerta) | Pase mecánico | La prueba ahora revisa el texto |
 | Persona test, 2 rondas, 20 confusiones | `docs/PERSONA.md` | 18 se arreglaron; 1 queda como límite conocido |
 
+## Deploys
+
+| # | Qué | Resultado |
+|---|---|---|
+| 1 | Primer deploy desde GitHub a Vercel (equipo dime5), sin `GEMINI_API_KEY` | `centimetro.vercel.app` en vivo; `/api/estado` responde `{"ia":"simulado"}` y la app funciona copiando la tabla a mano |
+| 2 | Se agregó `GEMINI_API_KEY` en Vercel (la pegó Nicolás; nunca pasó por el chat ni por el repo) y se volvió a desplegar con este commit | Lectura de capturas con Gemini real (resultado abajo, en "Prueba 8") |
+
 ## Lo que no se construyó
 
 Cuentas, base de datos, medir el cuerpo con la cámara, leer la tabla directo de la página de la tienda, aportar etiquetas a un registro público con moderación, verificar etiquetas midiendo la prenda, el calendario de compromisos del equipo (aquí solo aparece la línea "es un compromiso nuevo"), el piloto con 10 personas del Operator y cualquier cosa para tiendas.
