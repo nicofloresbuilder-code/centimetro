@@ -70,26 +70,31 @@ flowchart TD
 ### Carriles: quién hace qué
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph U[Ale · la compradora]
+      direction LR
       u1[Mide su prenda] --> u2[Sube captura y da permiso]
       u3[Revisa y corrige números] --> u4[Elige qué tabla es]
       u5[Lee resultado] --> u6[Anota devolución y fuente] --> u7[Decide] --> u8[Registra si le quedó]
     end
     subgraph S[Sistema · reglas fijas]
-      s1[Valida largo, tipo y rango] --> s2[Convierte pulgadas a cm]
-      s3[Compara solo lo comparable] --> s4[Marca lo que falta]
+      direction LR
+      s1[Valida largo, tipo y rango]
+      s2[Convierte pulgadas a cm] --> s3[Compara solo lo comparable] --> s4[Marca lo que falta]
       s5[Arma la etiqueta en cm]
     end
     subgraph IA[Gemini · el modelo]
+      direction LR
       i1[Lee la captura] 
       i2[Explica el resultado en sencillo]
     end
     subgraph R[Regla pública · propuesta]
+      direction LR
       r1[Formato de etiqueta en cm] --> r2[Endpoint público que cualquier agente lee]
     end
     u2 --> s1 --> i1 --> u3
-    u4 --> s2 --> s3 --> s4 --> u5
+    u4 --> s2
+    s4 --> u5
     s4 --> i2 --> u5
     u7 --> s5 --> r1
 ```
@@ -152,6 +157,7 @@ Si esto funciona, CENTÍMETRO deja de ser una app y se vuelve un formato: la "et
 ## 11. Plan de pruebas
 
 **Pase mecánico**
+
 1. Autoprueba del motor (`npx tsx src/lib/__selftest.ts`): conversión de pulgadas, rangos, tolerancias, "no sé", tabla de cuerpo contra prenda, filtro del texto de la IA.
 2. Flujo completo con el ejemplo inventado, en celular (390 px) y en escritorio.
 3. Una tabla en pulgadas se convierte bien.
@@ -167,6 +173,7 @@ Si esto funciona, CENTÍMETRO deja de ser una app y se vuelve un formato: la "et
 ## 12. Condición para parar
 
 Paro o cambio el enfoque si en las pruebas pasa una de estas tres cosas:
+
 - La lectura de la IA necesita corregir **más de 1 de cada 4 números**. Eso significaría que leer la captura cuesta más de lo que ahorra.
 - La mayoría de las tablas reales que pruebe son de **cuerpo y no de prenda**. En ese caso la comparación prenda contra prenda casi nunca aplica, y lo único que queda es la regla.
 - La persona del test no entiende **qué medir** sin ayuda.
