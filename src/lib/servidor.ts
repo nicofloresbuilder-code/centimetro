@@ -14,18 +14,25 @@ type Parte = { text: string } | { inlineData: { mimeType: string; data: string }
    Si el modelo falla, se pide la lista de modelos Flash disponibles y se usa otro. */
 let modeloVigente: string | null = null;
 
-async function elegirModelo(llave: string, evitar: string): Promise<string | null> {
+/* Bug del deploy 3: gemini-flash-latest respondió 503 y el "plan B" eligió un
+   modelo raro (gemini-omni-1.1-flash) sin cuota gratuita (429). Ahora el plan B
+   solo usa modelos Flash con versión normal ("gemini-2.5-flash", "gemini-3-flash"),
+   del más nuevo al más viejo, y al final las versiones "lite". */
+const version = (n: string) => Number(/gemini-(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
+
+async function modelosRespaldo(llave: string, evitar: string): Promise<string[]> {
   try {
     const r = await fetch(`${BASE}/models?pageSize=200`, { headers: { "x-goog-api-key": llave } });
-    if (!r.ok) return null;
+    if (!r.ok) return ["gemini-2.5-flash", "gemini-2.5-flash-lite"].filter((m) => m !== evitar);
     const j = await r.json();
     const nombres: string[] = (j?.models ?? [])
       .filter((m: { supportedGenerationMethods?: string[] }) => m.supportedGenerationMethods?.includes("generateContent"))
       .map((m: { name: string }) => String(m.name).replace(/^models\//, ""));
-    const flash = nombres.filter((n) => /flash/.test(n) && !/(image|tts|audio|live|exp|preview|latest|lite)/.test(n) && n !== evitar);
-    return flash.sort().reverse()[0] ?? nombres.find((n) => /flash/.test(n) && n !== evitar) ?? null;
+    const normales = nombres.filter((n) => /^gemini-\d+(\.\d+)?-flash$/.test(n)).sort((x, y) => version(y) - version(x));
+    const lite = nombres.filter((n) => /^gemini-\d+(\.\d+)?-flash-lite$/.test(n)).sort((x, y) => version(y) - version(x));
+    return [...normales, ...lite].filter((n) => n !== evitar);
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -80,17 +87,19 @@ export async function gemini(sistema: string, partes: Parte[]): Promise<{ datos:
   const queda = () => 55000 - (Date.now() - inicio);
   try {
     let modelo = modeloVigente ?? PREFERIDO;
-    let r = await llamar(modelo, llave, sistema, partes, 30000);
+    let r = await llamar(modelo, llave, sistema, partes, 25000);
     if ([429, 500, 503].includes(r.status) && queda() > 15000) {
       await new Promise((ok) => setTimeout(ok, 1500));
       r = await llamar(modelo, llave, sistema, partes, Math.min(25000, queda() - 2000));
     }
-    if ([400, 404, 500, 503, 504].includes(r.status) && queda() > 8000) {
-      const otro = await elegirModelo(llave, modelo);
-      console.error(`Gemini respondió ${r.status} con ${modelo}; se intenta con ${otro}`);
-      if (otro) {
+    if ([400, 404, 429, 500, 503, 504].includes(r.status) && queda() > 8000) {
+      const otros = (await modelosRespaldo(llave, modelo)).slice(0, 3);
+      for (const otro of otros) {
+        if (queda() < 8000) break;
+        console.error(`Gemini respondió ${r.status} con ${modelo}; se intenta con ${otro}`);
         modelo = otro;
-        r = await llamar(modelo, llave, sistema, partes, Math.max(5000, queda() - 2000));
+        r = await llamar(modelo, llave, sistema, partes, Math.min(25000, queda() - 2000));
+        if (r.ok) break;
       }
     }
     if (!r.ok) {

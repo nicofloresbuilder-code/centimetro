@@ -34,6 +34,7 @@
 | En celular, la tabla de resultados escondía las tallas 34 y 36 y el editor no cabía | Pase mecánico, captura en 390 px | Columnas fijas, letra más chica y textos que se acomodan en celular |
 | El enlace roto contaba 2 alertas (el anunciador de rutas de Next también es una alerta) | Pase mecánico | La prueba ahora revisa el texto |
 | En producción, leer la captura con Gemini falló con `AbortError`: el modelo tardó más de 28 s pensando | Logs de Vercel después del deploy 2 | Se pide pensar poco (`thinkingLevel: low`, o `thinkingBudget: 0` en 2.5), cada intento tiene su propio límite, un tiempo agotado pasa a otro modelo Flash y la función puede durar hasta 60 s |
+| Después, `gemini-flash-latest` respondió 503 (saturado) y el plan B eligió `gemini-omni-1.1-flash`, sin cuota gratuita (429) | Logs de Vercel, deploy 4 | El plan B solo usa modelos Flash con versión normal (del más nuevo al más viejo, luego "lite") y prueba hasta 3 |
 | Persona test, 2 rondas, 20 confusiones | `docs/PERSONA.md` | 18 se arreglaron; 1 queda como límite conocido |
 
 ## Deploys
